@@ -1,18 +1,16 @@
-const CACHE_NAME = "ai-calc-v1";
-const FILES_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png"
-];
-
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(FILES_TO_CACHE);
+    caches.open("calc-cache-v1").then((cache) => {
+      return cache.addAll([
+        "./",
+        "./index.html",
+        "./manifest.json",
+        "./icon-192.png",
+        "./icon-512.png"
+      ]);
     })
   );
+  console.log("Service Worker installed");
 });
 
 self.addEventListener("fetch", (event) => {
