@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Scientific Calculator</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #222;
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+    .calculator {
+      background: #333;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      width: 340px;
+    }
+    .display {
+      background: #000;
+      color: #0f0;
+      font-size: 1.8rem;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: right;
+      overflow-x: auto;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    button {
+      padding: 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background: #555;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover { background: #777; }
+    button.orange { background: #e67e22; }
+    button.blue { background: #2980b9; }
+    .ai-box {
+      margin-top: 15px;
+    }
+    #ai-input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    #ai-btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+      background: #27ae60;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button onclick="clearDisplay()" class="orange">C</button>
+      <button onclick="backspace()">⌫</button>
+      <button onclick="append('(')">(</button>
+      <button onclick="append(')')">)</button>
+      <button onclick="append('/')">÷</button>
+
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button onclick="append('*')">×</button>
+      <button onclick="append('^')">^</button>
+
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button onclick="append('-')">−</button>
+      <button onclick="append('√(')">√</button>
+
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button onclick="append('+')">+</button>
+      <button onclick="append('!')">n!</button>
+
+      <button onclick="append('0')">0</button>
+      <button onclick="append('.')">.</button>
+      <button onclick="append('π')">π</button>
+      <button onclick="append('e')">e</button>
+      <button onclick="calculate()" class="blue">=</button>
+
+      <button onclick="append('sin(')">sin</button>
+      <button onclick="append('cos(')">cos</button>
+      <button onclick="append('tan(')">tan</button>
+      <button onclick="append('log(')">log</button>
+      <button onclick="append('ln(')">ln</button>
+    </div>
+
+    <div class="ai-box">
+      <input id="ai-input" type="text" placeholder="Ask me: e.g. 'square root of 225'">
+      <button id="ai-btn" onclick="aiCalculate()">AI Calculate</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById("display");
+    let isDegree = true;
+
+    function append(value) {
+      if (display.textContent === "0") display.textContent = "";
+      display.textContent += value;
+    }
+    function clearDisplay() {
+      display.textContent = "0";
+    }
+    function backspace() {
+      display.textContent = display.textContent.slice(0, -1) || "0";
+    }
+
+    // Factorial
+    function factorial(n) {
+      if (n < 0) return NaN;
+      if (n === 0) return 1;
+      return n * factorial(n - 1);
+    }
+
+    // Replace functions and evaluate
+    function calculate() {
+      let expr = display.textContent;
+
+      expr = expr.replace(/π/g, "Math.PI")
+                 .replace(/e/g, "Math.E")
+                 .replace(/√\(/g, "Math.sqrt(")
+                 .replace(/(\d+)!/g, (m, n) => factorial(parseInt(n)))
+                 .replace(/\^/g, "**");
+
+      // Trig functions
+      expr = expr.replace(/sin\(([^)]+)\)/g, (_, a) =>
+        `Math.sin(${isDegree ? `(${a}*Math.PI/180)` : a})`);
+      expr = expr.replace(/cos\(([^)]+)\)/g, (_, a) =>
+        `Math.cos(${isDegree ? `(${a}*Math.PI/180)` : a})`);
+      expr = expr.replace(/tan\(([^)]+)\)/g, (_, a) =>
+        `Math.tan(${isDegree ? `(${a}*Math.PI/180)` : a})`);
+
+      try {
+        display.textContent = Function("return " + expr)();
+      } catch {
+        display.textContent = "Error";
+      }
+    }
+
+    // Convert written numbers (up to 1000)
+    function wordsToNumbers(text) {
+      const small = {
+        "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+        "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+        "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14,
+        "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18,
+        "nineteen": 19
+      };
+      const tens = {
+        "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+        "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90
+      };
+
+      const parts = text.toLowerCase().split(/[\s-]+/);
+      let num = 0, current = 0, output = "";
+
+      for (let word of parts) {
+        if (small[word] !== undefined) {
+          current += small[word];
+        } else if (tens[word] !== undefined) {
+          current += tens[word];
+        } else if (word === "hundred") {
+          current *= 100;
+        } else if (word === "thousand") {
+          current *= 1000;
+          num += current;
+          current = 0;
+        } else if (word === "and") {
+          continue;
+        } else {
+          if (current > 0) {
+            num += current;
+            output += num + " ";
+            current = 0;
+            num = 0;
+          }
+          output += word + " ";
+        }
+      }
+      if (current > 0) output += (num + current);
+      return output.trim();
+    }
+
+    // AI Input
+    function aiCalculate() {
+      let input = document.getElementById("ai-input").value.toLowerCase().trim();
+
+      input = wordsToNumbers(input);
+
+      input = input.replace(/^what is /, "").replace(/^calculate /, "");
+
+      input = input.replace(/plus|add/g, "+")
+                   .replace(/minus|subtract|difference between/g, "-")
+                   .replace(/times|multiplied by|x /g, "*")
+                   .replace(/divided by|over/g, "/")
+                   .replace(/to the power of|power of/g, "^")
+                   .replace(/square root of/g, "√(")
+                   .replace(/cube root of/g, "Math.cbrt(")
+                   .replace(/pi/g, "π")
+                   .replace(/factorial/g, "!");
+
+      display.textContent = input;
+      calculate();
+    }
+  </script>
+</body>
+</html>
