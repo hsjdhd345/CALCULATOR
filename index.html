@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#27ae60">
+  <link rel="icon" href="icon-192.png" type="image/png">
+
   <title>AI Scientific Calculator</title>
   <style>
     body {
@@ -230,6 +234,14 @@
       display.textContent = input;
       calculate();
     }
+    <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("Service Worker Registered"));
+  }
+</script>
+
   </script>
 </body>
 </html>
+
