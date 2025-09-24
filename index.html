@@ -6,11 +6,14 @@
   <link rel="manifest" href="manifest.json">
   <title>AI Scientific Calculator</title>
   <style>
+    :root {
+      --vh: 100%; /* fallback */
+    }
     body {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      height: calc(var(--vh, 1vh) * 100); /* dynamic height */
       background: #222;
       font-family: Arial, sans-serif;
       margin: 0;
@@ -18,7 +21,7 @@
     .calculator {
       background: #333;
       width: 100%;
-      height: 100vh;
+      height: 100%;
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
@@ -28,10 +31,9 @@
       color: #0f0;
       font-size: 2rem;
       padding: 20px;
-      margin: 0;
       text-align: right;
       overflow-x: auto;
-      flex: 0 0 15%; /* 15% of height for display */
+      flex: 0 0 15%;
     }
     .buttons {
       flex: 1;
@@ -42,7 +44,7 @@
       padding: 6px;
     }
     button {
-      font-size: clamp(1rem, 3vw, 2rem); /* Dynamic size */
+      font-size: clamp(1rem, 3vw, 2rem);
       border: none;
       border-radius: 6px;
       background: #555;
@@ -55,7 +57,7 @@
     button.orange { background: #e67e22; }
     button.blue { background: #2980b9; }
     .ai-box {
-      flex: 0 0 15%; /* AI box takes bottom 15% */
+      flex: 0 0 15%;
       padding: 10px;
       box-sizing: border-box;
     }
@@ -92,7 +94,8 @@
       <button onclick="append('7')">7</button>
       <button onclick="append('8')">8</button>
       <button onclick="append('9')">9</button>
-      <button onclick="append('*')">×</button>
+      <button onclick="append('×')">×</button>
+
       <button onclick="append('^')">^</button>
 
       <button onclick="append('4')">4</button>
@@ -127,6 +130,14 @@
   </div>
 
   <script>
+    // ✅ Fix 100vh issue on mobile
+    function setVh() {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    }
+    window.addEventListener('resize', setVh);
+    window.addEventListener('orientationchange', setVh);
+    setVh();
+
     const display = document.getElementById("display");
     let isDegree = true;
 
@@ -148,12 +159,15 @@
     }
 
     function calculate() {
-      let expr = display.textContent;
-      expr = expr.replace(/π/g, "Math.PI")
-                 .replace(/e/g, "Math.E")
-                 .replace(/√\(/g, "Math.sqrt(")
-                 .replace(/(\d+)!/g, (m, n) => factorial(parseInt(n)))
-                 .replace(/\^/g, "**");
+  let expr = display.textContent;
+
+  expr = expr.replace(/π/g, "Math.PI")
+             .replace(/e/g, "Math.E")
+             .replace(/√\(/g, "Math.sqrt(")
+             .replace(/(\d+)!/g, (m, n) => factorial(parseInt(n)))
+             .replace(/\^/g, "**")
+             .replace(/×/g, "*");  // ✅ new: convert × to *
+
 
       expr = expr.replace(/sin\(([^)]+)\)/g, (_, a) =>
         `Math.sin(${isDegree ? `(${a}*Math.PI/180)` : a})`);
